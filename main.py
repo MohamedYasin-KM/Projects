@@ -1,53 +1,113 @@
-from tkinter import *
+from playsound import playsound as PS
+import speech_recognition as s_r
 from googletrans import Translator
 from gtts import gTTS
-def translate_language():
-    n1 = entry.get()
-    n2 = Translator()
-    n3 = drop_down.get()
-
-    if n3 == "ENGLISH":
-        change = "en"
-    elif n3 == "TAMIL":
-        change = "ta"
-    elif n3 == "HINDI":
-        change = "hi"
-    elif n3 == "FRENCH":
-        change = "fr"
-
-    text_trans = n2.translate(n1, dest=change)
-    t=text_trans.text
-    gTTS(text=t, slow=False, lang=change)
-    twolabel.config(text=t)
+import os
+import pyaudio
+import gtts_token
 
 
-Lang_option = [
-        "ENGLISH",
-        "TAMIL",
-        "HINDI",
-        "FRENCH",
+dic_language=('afrikaans', 'af', 'albanian', 'sq', 'amharic', 'am',
+              'arabic', 'ar', 'armenian', 'hy', 'azerbaijani', 'az',
+              'basque', 'eu', 'belarusian', 'be', 'bengali', 'bn', 'bosnian',
+              'bs', 'bulgarian', 'bg', 'catalan', 'ca',
+              'cebuano', 'ceb', 'chichewa', 'ny', 'chinese (simplified)',
+              'zh-cn', 'chinese (traditional)', 'zh-tw',
+              'corsican', 'co', 'croatian', 'hr', 'czech', 'cs', 'danish',
+              'da', 'dutch', 'nl', 'english', 'en', 'esperanto',
+              'eo', 'estonian', 'et', 'filipino', 'tl', 'finnish', 'fi',
+              'french', 'fr', 'frisian', 'fy', 'galician', 'gl',
+              'georgian', 'ka', 'german', 'de', 'greek', 'el', 'gujarati',
+              'gu', 'haitian creole', 'ht', 'hausa', 'ha',
+              'hawaiian', 'haw', 'hebrew', 'he', 'hindi', 'hi', 'hmong',
+              'hmn', 'hungarian', 'hu', 'icelandic', 'is', 'igbo',
+              'ig', 'indonesian', 'id', 'irish', 'ga', 'italian', 'it',
+              'japanese', 'ja', 'javanese', 'jw', 'kannada', 'kn',
+              'kazakh', 'kk', 'khmer', 'km', 'korean', 'ko', 'kurdish (kurmanji)',
+              'ku', 'kyrgyz', 'ky', 'lao', 'lo',
+              'latin', 'la', 'latvian', 'lv', 'lithuanian', 'lt', 'luxembourgish',
+              'lb', 'macedonian', 'mk', 'malagasy',
+              'mg', 'malay', 'ms', 'malayalam', 'ml', 'maltese', 'mt', 'maori',
+              'mi', 'marathi', 'mr', 'mongolian', 'mn',
+              'myanmar (burmese)', 'my', 'nepali', 'ne', 'norwegian', 'no',
+              'odia', 'or', 'pashto', 'ps', 'persian',
+              'fa', 'polish', 'pl', 'portuguese', 'pt', 'punjabi', 'pa',
+              'romanian', 'ro', 'russian', 'ru', 'samoan',
+              'sm', 'scots gaelic', 'gd', 'serbian', 'sr', 'sesotho',
+              'st', 'shona', 'sn', 'sindhi', 'sd', 'sinhala',
+              'si', 'slovak', 'sk', 'slovenian', 'sl', 'somali', 'so',
+              'spanish', 'es', 'sundanese', 'su',
+              'swahili', 'sw', 'swedish', 'sv', 'tajik', 'tg', 'tamil',
+              'ta', 'telugu', 'te', 'thai', 'th', 'turkish', 'tr',
+              'ukrainian', 'uk', 'urdu', 'ur', 'uyghur', 'ug', 'uzbek',
+              'uz', 'vietnamese', 'vi', 'welsh', 'cy', 'xhosa', 'xh',
+              'yiddish', 'yi', 'yoruba', 'yo', 'zulu', 'zu')
 
-    ]
 
-tk_window = Tk()
-tk_window.title("LANGUAGE TRANSLATOR")
-tk_window.geometry('600x400')
-tk_window.config(bg='sky blue')
+# First, we will capture the user's Voice command
+# It will take the command through built-in microphone of the device
+def take_command():
+    r1 = s_r.Recognizer()
+    with s_r.Microphone() as source:
+        print("listening to the voice...")
+        r1.pause_threshold = 1
+        audio = r1.listen(source)
+
+    try:
+        print("Recognizing the voice...")
+        query_1 = r1.recognize_google(audio, language='en-in')
+        print(f" user said? {query_1}\n")
+    except Exception as ep:
+        # just in case it didn't recognise the voice or language properly
+        print("The user is requested to please say that again...")
+        return "None"
+    return query_1
 
 
+# Here, we will take the user's voice input from the user end
+query_1 = take_command()
+while (query_1 == "None"):
+    query_1 = take_command()
 
-entry = Entry(tk_window, bg='white', fg='black', font=("Arial",28,"bold"))
-entry.place(x=60, y=80)
-drop_down = StringVar()
-drop_down.set("Select Language")
 
-List_lang = OptionMenu(tk_window, drop_down, *Lang_option)
-List_lang.configure(bg='yellow', fg='red', font=("Arial", 28, "bold"))
-List_lang.place(x=500, y=80)
-twolabel = Label(tk_window, text="\t\t\t\t", bg="white", fg="black", font=("Arial", 28, "bold"))
-twolabel.place(x=0, y=150)
-twolabel = Label(tk_window, text="Translated language", bg="violet", fg="pink", font=("Arial", 28, "bold"))
-twolabel.place(x=220, y=150)
-t_b = Button(tk_window, text="Translate!", bg="grey", fg="white", font=("Arial", 28, "bold"), command=translate_language)
-t_b.place(x=220, y=220)
-tk_window.mainloop()
+def destination_language():
+    print("Please enter the language in which you want to convert the above input \
+    : Ex. English, Hindi, German, French etc.")
+    print()
+
+    # Now, we will implement the input destination language in which the user
+    # wants to translate the voice command:
+    to_language = take_command()
+    while to_language == "None":
+        to_language = take_command()
+    to_language = to_language.lower()
+    return to_language
+
+
+to_language = destination_language()
+
+# Now, we will map the input destination language with the code
+while (to_language not in dic_language):
+    print("The language in which the user wants to convertthe voice command is currently not available the user is requested to input some other language")
+    print()
+    to_language = destination_language()
+
+to_language = dic_language[dic_language.index(to_language) + 1]
+# Here, we will invoke the Google Translator
+translator1 = Translator()
+# Now we will translate from src to dest
+text_to_translate_1 = translator1.translate(query_1, dest=to_language)
+text1 = text_to_translate_1.text
+# We will be using the Google-Text-to-Speech i.e., gTTS() function of the gtts
+# module for speaking the translated text into the input destination language
+# selected by the user which is stored in to_language.
+# We have also given third argument as False because it speaks very slowly by # default
+speak = gTTS(text=text1, slow=False, lang=to_language)
+
+# We will be using the save() function for saving the translated speech in #captured_JTP_voice.mp3 file
+speak.save("captured_JTP_voice.mp3")
+
+# Now at last, we will be using the OS module for running the translated voice.
+PS('captured_JTP_voice.mp3')
+os.remove('captured_JTP_voice.mp3')
+print(text1)
